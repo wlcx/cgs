@@ -47,7 +47,7 @@ def prettyPrintList(inlist):
 		
 if __name__ == '__main__':
 	logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',datefmt='%d/%m/%y %H:%M:%S',level=logging.DEBUG)
-	
+		
 	s=mice.m.getServer(1)
 	
 	while True:
@@ -56,15 +56,15 @@ if __name__ == '__main__':
 			time.sleep(5)
 			if len(s.getUsers().keys()) > len(currentusers):
 				newusers = list(set(listLoggedInUsers()) - set(currentusers))
-				logging.INFO('%s logged in!', prettyPrintList(newusers))
+				logging.info('%s logged in!', prettyPrintList(newusers))
 				currentusers = listLoggedInUsers()
 				for x in users.keys():
 					if x in currentusers:
-						logging.INFO("%s is logged in already, skipping", x)
+						logging.info("%s is logged in already, skipping", x)
 					else:
-						logging.INFO("Notifying %s", x)
+						logging.info("Notifying %s", x)
 						notify(users[x], (prettyPrintList(newusers) + " logged in"), prettyPrintList(currentusers) + " are online.")
 						time.sleep(1) #be nice to the api
 		except KeyboardInterrupt:
-			logging.INFO("Caught SIGINT, exiting")
+			logging.info("Caught SIGINT, exiting")
 			sys.exit()
