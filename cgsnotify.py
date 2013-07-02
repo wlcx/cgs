@@ -33,18 +33,17 @@ def listLoggedInUsers():
     
 def prettyPrintList(inlist):
     outstring = ""
-    if len(inlist) == 1:
+    numUsers=len(inlist)
+    if numUsers == 1:
         outstring += inlist[0]
-    if len(inlist) == 2:
+    if numUsers == 2:
         outstring += (inlist[0] + " and " + inlist[1])
-    if len(inlist) == 3:
-        outstring += (inlist[0] + ", " + inlist[1] + " and " + inlist[2])
-    if len(inlist) >= 4:
-        for x in (range(len(inlist) - 2)):
+    if numUsers >= 3:
+        for x in range(numUsers-2):
             outstring += inlist[x] + ", "
-        outstring += (inlist[len(inlist) - 2] + " and " + inlist[len(inlist) - 1])
+        outstring += (inlist[-2] + " and " + inlist[-1])
     return outstring
-        
+
 if __name__ == '__main__':
     
     argparser = argparse.ArgumentParser(description='CGS Mumble server notifications script.')
