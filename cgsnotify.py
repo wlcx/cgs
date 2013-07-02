@@ -20,7 +20,7 @@ def notify(userkey, title, message):
 			"token": apptoken,
 			"user": userkey,
 			"message": message,
-			"title" : "CGSnotify - " + title,
+			"title" : "CGSNotify - " + title,
 		}), { "Content-type": "application/x-www-form-urlencoded" }
 	)
 	conn.getresponse()
@@ -46,25 +46,40 @@ def prettyPrintList(inlist):
 	return outstring
 		
 if __name__ == '__main__':
+	
+	argparser = argparse.ArgumentParser(description='CGS Mumble server notifications script.')
+	argparser.add_argument('-t', '--test-mode', help = "Only sends notifications to the given API key.")
+	#argparser.add_argument('-v', '--verbose', action='count', default = 0, help = "Display info as well as errors")
+	args = argparser.parse_args()
+ 
 	logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',datefmt='%d/%m/%y %H:%M:%S',level=logging.DEBUG)
-		
-	s=mice.m.getServer(1)
+	
+	s = mice.m.getServer(1)
 	
 	while True:
 		try:
 			currentusers = listLoggedInUsers()
 			time.sleep(5)
-			if len(s.getUsers().keys()) > len(currentusers):
-				newusers = list(set(listLoggedInUsers()) - set(currentusers))
+			if len(s.getUsers().keys()) > len(currentusers): #user logs in
+				newusers = list(set(listLoggedInUsers()) - set(currentusers)) 
 				logging.info('%s logged in!', prettyPrintList(newusers))
 				currentusers = listLoggedInUsers()
-				for x in users.keys():
-					if x in currentusers:
-						logging.info("%s is logged in already, skipping", x)
-					else:
-						logging.info("Notifying %s", x)
-						notify(users[x], (prettyPrintList(newusers) + " logged in"), prettyPrintList(currentusers) + " are online.")
-						time.sleep(1) #be nice to the api
+				if len(currentusers) == 1:
+					isare = 'is'
+				else: isare = 'are'
+				if args.test_mode:
+					logging.info('Running in testing mode')
+					notify(args.test_mode, ("TESTING:" + prettyPrintList(newusers) + " logged in"), 
+								   prettyPrintList(currentusers) + " " + isare + " online.")
+				else:
+					for x in users.keys():
+						if x in currentusers:
+							logging.info("%s is logged in already, skipping", x)
+						else:
+							logging.info("Notifying %s", x)
+							notify(users[x], (prettyPrintList(newusers) + " logged in"), 
+								   prettyPrintList(currentusers) + " " + isare + " online.")
+							time.sleep(1) #be nice to the api
 		except KeyboardInterrupt:
 			logging.info("Caught SIGINT, exiting")
 			sys.exit()
