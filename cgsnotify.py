@@ -72,11 +72,11 @@ if __name__ == '__main__':
             # Will show new users, so if oldusers=["a","b","c","d"],
             # currentusers=["a","e","f"], newusers=["e","f"]
             newusers = list(set(currentusers) - set(oldusers))
-            if len(newusers)>0:
+            if len(newusers) > 0:
                 logging.info('%s logged in!', prettyPrintList(newusers))
 
                 # Only works for non-zero users (but in if so its fine)
-                isare=isorare[bool(len(currentusers)-1)]
+                isare=isorare[bool(len(currentusers) - 1)]
                 #Alternative:
                 ##if len(currentusers) == 1: isare = 'is'
                 ##else: isare = 'are'
