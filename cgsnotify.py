@@ -28,23 +28,28 @@ def notify(userkey, title, message):
 
 def listLoggedInUsers():
     users = []
-    for x in s.getUsers():
+    for x in s.getUsers(): # x is key for dictioary s.getUsers()
         users.append(s.getUsers()[x].name)
+    #WIP: Possible Alternative
+    #WIP: users=[s.getUsers()...
     return users
 
 #Format a list with nice grammar (so ['foo', 'bar', 'baz'] returns 'foo, bar and baz')
 def prettyPrintList(inlist):
     outstring = ""
     numUsers=len(inlist)
-    if numUsers == 1:
+    if numUsers == 1: # foo
         outstring += inlist[0]
-    if numUsers == 2:
+    if numUsers == 2: # foo and bar
         outstring += (inlist[0] + " and " + inlist[1])
-    if numUsers >= 3:
+    if numUsers >= 3: #foo, bar and baz
         for x in range(numUsers-2):
             outstring += inlist[x] + ", "
+        # exploits wraparound indexing, s[-1] refers to last item
         outstring += (inlist[-2] + " and " + inlist[-1])
     return outstring
+
+isorare=["is","are"]
 
 if __name__ == '__main__':
     
@@ -63,21 +68,26 @@ if __name__ == '__main__':
             oldusers = listLoggedInUsers()
             time.sleep(5)
             currentusers = listLoggedInUsers()
-            # Find if users have increased decreased or stayed the same
-            compare=cmp(len(set(currentusers)),len(set(oldusers))) #1 if new users, 0 if same number, -1 if less.
-            if compare==1 | (compare==0 & (set(currentusers) != set(oldusers))): #if user logs in
-                newusers = list(set(currentusers) - set(oldusers)) 
+
+            # Will show new users, so if oldusers=["a","b","c","d"],
+            # currentusers=["a","e","f"], newusers=["e","f"]
+            newusers = list(set(currentusers) - set(oldusers))
+            if len(newusers)>0:
                 logging.info('%s logged in!', prettyPrintList(newusers))
-                if len(currentusers) == 1:
-                    isare = 'is'
-                else: isare = 'are'
+
+                # Only works for non-zero users (but in if so its fine)
+                isare=isorare[bool(len(currentusers)-1)]
+                #Alternative:
+                ##if len(currentusers) == 1: isare = 'is'
+                ##else: isare = 'are'
+                
                 #Output below
                 if args.test_mode:
                     logging.info('Running in testing mode')
                     notify(users[args.test_mode], ("TESTING:" + prettyPrintList(newusers) + " logged in"), 
                                    prettyPrintList(currentusers) + " " + isare + " online.")
                 else:
-                    for x in users.keys(): #listof names for all notifyees (yes, that's a word)
+                    for x in users.keys(): #list of names for those with pushover
                         if x in currentusers:
                             logging.info("%s is logged in already, skipping", x)
                         else:
