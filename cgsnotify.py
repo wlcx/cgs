@@ -60,27 +60,30 @@ if __name__ == '__main__':
     
     while True:
         try:
-            currentusers = listLoggedInUsers()
+            oldusers = listLoggedInUsers()
             time.sleep(5)
-            if len(s.getUsers().keys()) > len(currentusers): #if user logs in
-                newusers = list(set(listLoggedInUsers()) - set(currentusers)) 
+            currentusers = listLoggedInUsers()
+            # Find if users have increased decreased or stayed the same
+            compare=cmp(len(set(currentusers)),len(set(oldusers))) #1 if new users, 0 if same number, -1 if less.
+            if compare==1 | (compare==0 & (set(currentusers) != set(oldusers))): #if user logs in
+                newusers = list(set(currentusers)) - set(oldusers)) 
                 logging.info('%s logged in!', prettyPrintList(newusers))
-                currentusers = listLoggedInUsers()
                 if len(currentusers) == 1:
                     isare = 'is'
                 else: isare = 'are'
+                #Output below
                 if args.test_mode:
                     logging.info('Running in testing mode')
                     notify(users[args.test_mode], ("TESTING:" + prettyPrintList(newusers) + " logged in"), 
                                    prettyPrintList(currentusers) + " " + isare + " online.")
                 else:
-                    for x in users.keys(): #for all notifyees (yes, that's a word)
+                    for x in users.keys(): #listof names for all notifyees (yes, that's a word)
                         if x in currentusers:
                             logging.info("%s is logged in already, skipping", x)
                         else:
                             logging.info("Notifying %s", x)
-                            notify(users[x], (prettyPrintList(newusers) + " logged in"), 
-                                   prettyPrintList(currentusers) + " " + isare + " online.")
+                            notify(users[x],(prettyPrintList(newusers) + " logged in"), 
+                            (prettyPrintList(currentusers) + " " + isare + " online."))
                             time.sleep(1) #be nice to the api
         except KeyboardInterrupt:
             logging.info("Caught SIGINT, exiting")
