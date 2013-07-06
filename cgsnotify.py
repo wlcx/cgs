@@ -13,6 +13,7 @@ except ImportError:
     logging.ERROR("No config file found")
     sys.exit()
 
+#Post notification to pushover servers
 def notify(userkey, title, message):
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json",
@@ -30,7 +31,8 @@ def listLoggedInUsers():
     for x in s.getUsers():
         users.append(s.getUsers()[x].name)
     return users
-    
+
+#Format a list with nice grammar (so ['foo', 'bar', 'baz'] returns 'foo, bar and baz')
 def prettyPrintList(inlist):
     outstring = ""
     numUsers=len(inlist)
@@ -47,19 +49,20 @@ def prettyPrintList(inlist):
 if __name__ == '__main__':
     
     argparser = argparse.ArgumentParser(description='CGS Mumble server notifications script.')
-    argparser.add_argument('-t', '--test-mode', help = "Only sends notifications to the given API key.")
+    argparser.add_argument('-t', '--test-mode', help = "Only sends notifications to the given username's key.")
     #argparser.add_argument('-v', '--verbose', action='count', default = 0, help = "Display info as well as errors")
     args = argparser.parse_args()
  
     logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',datefmt='%d/%m/%y %H:%M:%S',level=logging.DEBUG)
     
+    #retrieve 1st virtual server object
     s = mice.m.getServer(1)
     
     while True:
         try:
             currentusers = listLoggedInUsers()
             time.sleep(5)
-            if len(s.getUsers().keys()) > len(currentusers): #user logs in
+            if len(s.getUsers().keys()) > len(currentusers): #if user logs in
                 newusers = list(set(listLoggedInUsers()) - set(currentusers)) 
                 logging.info('%s logged in!', prettyPrintList(newusers))
                 currentusers = listLoggedInUsers()
@@ -68,10 +71,10 @@ if __name__ == '__main__':
                 else: isare = 'are'
                 if args.test_mode:
                     logging.info('Running in testing mode')
-                    notify(args.test_mode, ("TESTING:" + prettyPrintList(newusers) + " logged in"), 
+                    notify(users[args.test_mode], ("TESTING:" + prettyPrintList(newusers) + " logged in"), 
                                    prettyPrintList(currentusers) + " " + isare + " online.")
                 else:
-                    for x in users.keys():
+                    for x in users.keys(): #for all notifyees (yes, that's a word)
                         if x in currentusers:
                             logging.info("%s is logged in already, skipping", x)
                         else:
