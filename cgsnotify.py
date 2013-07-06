@@ -66,7 +66,7 @@ if __name__ == '__main__':
             # Find if users have increased decreased or stayed the same
             compare=cmp(len(set(currentusers)),len(set(oldusers))) #1 if new users, 0 if same number, -1 if less.
             if compare==1 | (compare==0 & (set(currentusers) != set(oldusers))): #if user logs in
-                newusers = list(set(currentusers)) - set(oldusers)) 
+                newusers = list(set(currentusers) - set(oldusers)) 
                 logging.info('%s logged in!', prettyPrintList(newusers))
                 if len(currentusers) == 1:
                     isare = 'is'
