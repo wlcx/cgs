@@ -13,6 +13,35 @@ except ImportError:
     logging.ERROR("No config file found")
     sys.exit()
 
+#Server callback class
+class ServerCallbackI(Murmur.ServerCallback):
+    def __init__(self, server, adapter):
+        self.server = server
+    
+    def userConnected(self, u):
+        logging.info(u.name + " connected")
+    
+    def userDisconnected(self, u):
+        logging.info(u.name + " disconnected")
+    
+    def userTextMessage(self, p, msg, current=None):
+        print "userTextMessage"
+        print self.server
+        print p
+        print msg
+    
+    def userStateChanged(self, u):
+        pass
+    
+    def channelCreated(self, c):
+        pass
+
+    def channelRemoved(self, c):
+        pass
+    
+    def channelStateChanged(self, c):
+        pass
+
 # Post notification to pushover servers
 def notify(userkey, title, message):
     conn = httplib.HTTPSConnection("api.pushover.net:443")
