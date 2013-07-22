@@ -21,7 +21,8 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
     def userConnected(self, u, current=None):
         logging.info(u.name + " connected")
         currentusers = listLoggedInUsers()
-        
+        if u.name not in userlogininfo:
+            userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
         # prevent notifications being sent if the user logs out and in again within quietloginoffset seconds
         if time.mktime(datetime.datetime.now().timetuple()) > (userlogininfo[u.name]["lastlogout"] + quietloginoffset):
             isare = "is" if len(currentusers) == 1 else "are"
@@ -39,10 +40,12 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
                         (formatListToString(currentusers) + " " + isare + " online."))
                         time.sleep(0.5) # be nice to the api
         else:
-            logging.info("User logged out and in again within " + quietloginoffset + " seconds. Not notifying.")
+            logging.info("User logged out and in again within " + str(quietloginoffset) + " seconds. Not notifying.")
         userlogininfo[u.name]["lastlogin"] = time.mktime(datetime.datetime.now().timetuple())
     def userDisconnected(self, u, current=None):
         logging.info(u.name + " disconnected")
+        if u.name not in userlogininfo:
+            userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
         userlogininfo[u.name]["lastlogout"] = time.mktime(datetime.datetime.now().timetuple())
     
     def userTextMessage(self, p, msg, current=None):
