@@ -8,38 +8,50 @@ import sys
 
 
 try:
-    from cgsnotify_config import users, apptoken
+    from cgsnotify_config import users, apptoken, icesecret
 except ImportError:
     logging.ERROR("No config file found")
     sys.exit()
 
 #Server callback class
-class ServerCallbackI(Murmur.ServerCallback):
+class ServerCallbackI(mice.Murmur.ServerCallback):
     def __init__(self, server, adapter):
         self.server = server
     
-    def userConnected(self, u):
+    def userConnected(self, u, current=None):
         logging.info(u.name + " connected")
+        currentusers = listLoggedInUsers()
+        isare = 'is' if len(currentusers) == 1 else 'are'
+        if args.test_mode:
+            logging.info('Running in testing mode')
+            notify(users[args.test_mode], ("TESTING: " + u.name + " logged in"), 
+            formatListToString(currentusers) + " " + isare + " online.")
+        else:
+            for x in users.keys(): # list of names for those with pushover
+                if x in currentusers:
+                    logging.info("%s is logged in already, skipping", x)
+                else:
+                    logging.info("Notifying %s", x)
+                    notify(users[x],(u.name + " logged in"), 
+                    (formatListToString(currentusers) + " " + isare + " online."))
+                    time.sleep(0.5) # be nice to the api
     
-    def userDisconnected(self, u):
+    def userDisconnected(self, u, current=None):
         logging.info(u.name + " disconnected")
     
     def userTextMessage(self, p, msg, current=None):
-        print "userTextMessage"
-        print self.server
-        print p
-        print msg
+        print "[CHAT] " + p.name + ": " + msg.text
     
-    def userStateChanged(self, u):
+    def userStateChanged(self, u, current=None):
         pass
     
-    def channelCreated(self, c):
+    def channelCreated(self, c, current=None):
         pass
 
-    def channelRemoved(self, c):
+    def channelRemoved(self, c, current=None):
         pass
     
-    def channelStateChanged(self, c):
+    def channelStateChanged(self, c, current=None):
         pass
 
 # Post notification to pushover servers
@@ -57,28 +69,26 @@ def notify(userkey, title, message):
 
 def listLoggedInUsers():
     users = []
-    for x in s.getUsers(): # x is key for dictioary s.getUsers()
+    for x in s.getUsers(): # x is key for dictionary s.getUsers()
         users.append(s.getUsers()[x].name)
     # WIP: Possible Alternative
     # WIP: users = [s.getUsers()...
     return users
 
 # Format a list with nice grammar (so ['foo', 'bar', 'baz'] returns 'foo, bar and baz')
-def prettyPrintList(inlist):
+def formatListToString(inputlist):
     outstring = ""
-    numUsers=len(inlist)
-    if numUsers == 1: # foo
-        outstring += inlist[0]
-    if numUsers == 2: # foo and bar
-        outstring += (inlist[0] + " and " + inlist[1])
-    if numUsers >= 3: # foo, bar and baz
-        for x in range(numUsers-2):
-            outstring += inlist[x] + ", "
+    numusers=len(inputlist)
+    if numusers == 1: # foo
+        outstring += inputlist[0]
+    if numusers == 2: # foo and bar
+        outstring += (inputlist[0] + " and " + inputlist[1])
+    if numusers >= 3: # foo, bar and baz
+        for x in range(numusers-2):
+            outstring += inputlist[x] + ", "
         # exploits wraparound indexing, s[-1] refers to last item
-        outstring += (inlist[-2] + " and " + inlist[-1])
+        outstring += (inputlist[-2] + " and " + inputlist[-1])
     return outstring
-
-isorare=["is","are"]
 
 if __name__ == '__main__':
     
@@ -89,41 +99,18 @@ if __name__ == '__main__':
  
     logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',datefmt='%d/%m/%y %H:%M:%S',level=logging.DEBUG)
     
-    # retrieve 1st virtual server object
-    s = mice.m.getServer(1)
+    # initialise callback interface
+    mice.ice.getImplicitContext().put("secret", icesecret)
+    adapter = mice.ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h 127.0.0.1")
+    adapter.activate()
+    s=mice.m.getServer(1)
+    cb=mice.Murmur.ServerCallbackPrx.uncheckedCast(adapter.addWithUUID(ServerCallbackI(s, adapter)))
+    s.addCallback(cb)
+    
     
     while True:
-        try:
-            oldusers = listLoggedInUsers()
-            time.sleep(5)
-            currentusers = listLoggedInUsers()
-
-            # Will show new users, so if oldusers = ["a","b","c","d"],
-            # currentusers = ["a","e","f"], newusers = ["e","f"]
-            newusers = list(set(currentusers) - set(oldusers))
-            if len(newusers) > 0:
-                logging.info('%s logged in!', prettyPrintList(newusers))
-
-                # Only works for non-zero users (but in if so its fine)
-                isare = isorare[bool(len(currentusers) - 1)]
-                # Alternative:
-                # if len(currentusers) == 1: isare = 'is'
-                # else: isare = 'are'
-                
-                # Output below
-                if args.test_mode:
-                    logging.info('Running in testing mode')
-                    notify(users[args.test_mode], ("TESTING:" + prettyPrintList(newusers) + " logged in"), 
-                                   prettyPrintList(currentusers) + " " + isare + " online.")
-                else:
-                    for x in users.keys(): # list of names for those with pushover
-                        if x in currentusers:
-                            logging.info("%s is logged in already, skipping", x)
-                        else:
-                            logging.info("Notifying %s", x)
-                            notify(users[x],(prettyPrintList(newusers) + " logged in"), 
-                            (prettyPrintList(currentusers) + " " + isare + " online."))
-                            time.sleep(0.5) # be nice to the api
+        try:               
+            time.sleep(1)
         except KeyboardInterrupt:
             logging.info("Caught SIGINT, exiting")
             sys.exit()
