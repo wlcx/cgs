@@ -13,17 +13,6 @@ except ImportError:
     logging.ERROR("No config file found")
     sys.exit()
 
-# initialise callback interface and server object
-mice.ice.getImplicitContext().put("secret", icesecret)
-adapter = mice.ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h 127.0.0.1")
-adapter.activate()
-s=mice.m.getServer(1)
-cb=mice.Murmur.ServerCallbackPrx.uncheckedCast(adapter.addWithUUID(ServerCallbackI(s, adapter)))
-s.addCallback(cb)
-
-userlogininfo = {}
-quietloginoffset = 60 # if the user logs in less than this many seconds after logging out then noone is notified
-
 #Server callback class
 class ServerCallbackI(mice.Murmur.ServerCallback):
     def __init__(self, server, adapter):
@@ -106,6 +95,17 @@ def formatListToString(inputlist):
         # exploits wraparound indexing, s[-1] refers to last item
         outstring += (inputlist[-2] + " and " + inputlist[-1])
     return outstring
+
+# initialise callback interface and server object
+mice.ice.getImplicitContext().put("secret", icesecret)
+adapter = mice.ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h 127.0.0.1")
+adapter.activate()
+s=mice.m.getServer(1)
+cb=mice.Murmur.ServerCallbackPrx.uncheckedCast(adapter.addWithUUID(ServerCallbackI(s, adapter)))
+s.addCallback(cb)
+
+userlogininfo = {}
+quietloginoffset = 60 # if the user logs in less than this many seconds after logging out then noone is notified
 
 if __name__ == "__main__":
     
