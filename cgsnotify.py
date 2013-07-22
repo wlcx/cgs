@@ -110,7 +110,7 @@ def formatListToString(inputlist):
 if __name__ == "__main__":
     
     argparser = argparse.ArgumentParser(description="CGS Mumble server notifications script.")
-    argparser.add_argument("-t", "--test-mode", help = "Only sends notifications to the given username"s key.")
+    argparser.add_argument("-t", "--test-mode", help = "Only sends notifications to the given username's key.")
     #argparser.add_argument("-v", "--verbose", action="count", default = 0, help = "Display info as well as errors")
     args = argparser.parse_args()
  
