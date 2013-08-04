@@ -8,9 +8,9 @@ import sys
 
 
 try:
-    from cgsnotify_config import users, apptoken, icesecret
+    from cgsnotify_config import pushoverusers, apptoken, icesecret
 except ImportError:
-    logging.ERROR("No config file found")
+    logging.error("No config file found")
     sys.exit()
 
 #Server callback class
@@ -31,7 +31,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
                 sendPushoverNotification(users[args.test_mode], ("TESTING: " + u.name + " logged in"), 
                 formatListToString(currentusers) + " " + isare + " online.")
             else:
-                for x in users.keys(): # list of names for those with pushover
+                for x in pushoverusers.keys(): # list of names for those with pushover
                     if x in currentusers:
                         logging.info("%s is logged in already, skipping", x)
                     else:
@@ -49,7 +49,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
         userlogininfo[u.name]["lastlogout"] = time.mktime(datetime.datetime.now().timetuple())
     
     def userTextMessage(self, p, msg, current=None):
-        print "[CHAT] " + p.name + ": " + msg.text
+        logging.info("[CHAT] " + p.name + ": " + msg.text)
     
     def userStateChanged(self, u, current=None):
         pass
