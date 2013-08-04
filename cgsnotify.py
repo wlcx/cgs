@@ -28,7 +28,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
             isare = "is" if len(currentusers) == 1 else "are"
             if args.test_mode:
                 logging.info("Running in testing mode")
-                sendPushoverNotification(users[args.test_mode], ("TESTING: " + u.name + " logged in"), 
+                sendPushoverNotification(pushoverusers[args.test_mode], ("TESTING: " + u.name + " logged in"), 
                 formatListToString(currentusers) + " " + isare + " online.")
             else:
                 for x in pushoverusers.keys(): # list of names for those with pushover
@@ -36,7 +36,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
                         logging.info("%s is logged in already, skipping", x)
                     else:
                         logging.info("Notifying %s", x)
-                        sendPushoverNotification(users[x],(u.name + " logged in"), 
+                        sendPushoverNotification(pushoverusers[x],(u.name + " logged in"), 
                         (formatListToString(currentusers) + " " + isare + " online."))
                         time.sleep(0.5) # be nice to the api
         else:
