@@ -17,12 +17,15 @@ except ImportError:
 
 #Server callback class
 class ServerCallbackI(mice.Murmur.ServerCallback):
+    """
+    Callback interface class to pass to the mumble server
+    """
     def __init__(self, server, adapter):
         self.server = server
     
     def userConnected(self, u, current=None):
         logging.info(u.name + " connected")
-        currentusers = listLoggedInUsers()
+        currentusers = list_logged_in_users()
         if u.name not in userlogininfo:
             userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
         # prevent notifications being sent if the user logs out and in again within quietloginoffset seconds
@@ -30,16 +33,16 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
             isare = "is" if len(currentusers) == 1 else "are"
             if args.test_mode:
                 logging.info("Testing mode: notifying " + args.test_mode)
-                sendPushoverNotification(pushoverusers[args.test_mode], ("TESTING: " + u.name + " logged in"), 
-                formatListToString(currentusers) + " " + isare + " online.")
+                send_pushover_notification(pushoverusers[args.test_mode], ("TESTING: " + u.name + " logged in"), 
+                list_to_string(currentusers) + " " + isare + " online.")
             else:
                 for x in pushoverusers.keys(): # list of names for those with pushover
                     if x in currentusers:
                         logging.info("%s is logged in already, skipping", x)
                     else:
                         logging.info("Notifying %s", x)
-                        sendPushoverNotification(pushoverusers[x],(u.name + " logged in"), 
-                        (formatListToString(currentusers) + " " + isare + " online."))
+                        send_pushover_notification(pushoverusers[x],(u.name + " logged in"), 
+                        (list_to_string(currentusers) + " " + isare + " online."))
                         time.sleep(0.5) # be nice to the api
         else:
             logging.info("User logged out and in again within " + str(quietloginoffset) + " seconds. Not notifying.")
@@ -66,7 +69,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
         pass
 
 # Post notification to pushover servers
-def sendPushoverNotification(userkey, title, message):
+def send_pushover_notification(userkey, title, message):
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json",
         urllib.urlencode({
@@ -78,16 +81,17 @@ def sendPushoverNotification(userkey, title, message):
     )
     conn.getresponse()
 
-def listLoggedInUsers():
+def list_logged_in_users():
     users = []
     for x in s.getUsers(): # x is key for dictionary s.getUsers()
         users.append(s.getUsers()[x].name)
-    # WIP: Possible Alternative
-    # WIP: users = [s.getUsers()...
     return users
 
-# Format a list with nice grammar (so ["foo", "bar", "baz"] returns "foo, bar and baz")
-def formatListToString(inputlist):
+def list_to_string(inputlist):
+    """
+    Format a list to a string with grammar 
+    Inputlist[n] (where n>3) returns "inputlist[0], inputlist[1], ... and inputlist[n]"
+    """
     outstring = ""
     numusers=len(inputlist)
     if numusers == 1: # foo
@@ -102,6 +106,9 @@ def formatListToString(inputlist):
     return outstring
 
 def initialise_callbacks():
+    """
+    Setup the mumble server callback interface and register it with the server
+    """
     adapter = mice.ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h 127.0.0.1")
     adapter.activate()
     cb=mice.Murmur.ServerCallbackPrx.uncheckedCast(adapter.addWithUUID(ServerCallbackI(s, adapter)))
