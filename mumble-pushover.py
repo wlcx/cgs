@@ -116,7 +116,7 @@ def parse_text_command(user, command):
     command = command[1:]
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
-    else if command == 'stillhere':
+    elif command == 'stillhere':
         notify_users()
 
 if __name__ == "__main__":
