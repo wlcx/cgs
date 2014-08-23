@@ -117,11 +117,14 @@ def parse_text_command(user, command):
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
     elif command == 'stillhere':
-        notify_users('Poke!', list_to_string(list_logged_in_users()) + ' are still online')
+        notify_users('Poke!',
+                     list_to_string(list_logged_in_users()) + ' are still online',
+                     currentusers=list_logged_in_users()
+                     )
 
 if __name__ == "__main__":
     userlogininfo = {}
-    
+
     with open('config.yaml', 'r') as f:
         config = yaml.load(f)
 
