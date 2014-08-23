@@ -27,14 +27,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
                 send_pushover_notification(config['pushoverusers'][args.test_mode], ("TESTING: " + u.name + " logged in"),
                 list_to_string(currentusers) + " " + isare + " online.")
             else:
-                for x in config['pushoverusers'].keys(): # list of names for those with pushover
-                    if x in currentusers:
-                        logging.info("%s is logged in already, skipping", x)
-                    else:
-                        logging.info("Notifying %s", x)
-                        send_pushover_notification(config['pushoverusers'][x],(u.name + " logged in"),
-                        (list_to_string(currentusers) + " " + isare + " online."))
-                        time.sleep(0.5) # be nice to the api
+                notify_users()
         else:
             logging.info("User logged out and in again within " + str(config['quietloginoffset']) + " seconds. Not notifying.")
         userlogininfo[u.name]["lastlogin"] = time.mktime(datetime.datetime.now().timetuple())
@@ -48,7 +41,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
     def userTextMessage(self, p, msg, current=None):
         if msg.text[0] == config['commandprefix']:
             parse_text_command(p, msg.text)
-	else:
+        else:
             logging.info("[CHAT] " + p.name + ": " + msg.text)
 
     def userStateChanged(self, u, current=None):
@@ -82,6 +75,16 @@ def list_logged_in_users():
         users.append(s.getUsers()[x].name)
     return users
 
+def notify_users(all=False):
+    for x in config['pushoverusers'].keys(): # list of names for those with pushover
+        if x in currentusers:
+            logging.info("%s is logged in already, skipping", x)
+        else:
+            logging.info("Notifying %s", x)
+            send_pushover_notification(config['pushoverusers'][x],(u.name + " logged in"),
+            (list_to_string(currentusers) + " " + isare + " online."))
+            time.sleep(0.5) # be nice to the api
+
 def list_to_string(inputlist):
     """
     Format a list to a string with grammar
@@ -114,7 +117,7 @@ def parse_text_command(user, command):
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
     else if command == 'stillhere':
-
+        notify_users()
 
 if __name__ == "__main__":
     userlogininfo = {}
