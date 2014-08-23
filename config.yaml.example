@@ -1,13 +1,24 @@
-name: Server name to show in notification
+#The name displayed in notifications
+#E.G. "mumble-pushover - Foo logged in"
+name: mumble-pushover
 
+#secret for communication with mumble server over ICE
+#set this in your mumble server config file
 icesecret: icesecret
 
+#Pushover application api key. Create one at https://pushover.net/apps/build
 apptoken: pushoverapptoken
 
+#specify mumble user - pushover user key mapping
+#username has to be as it appears on the server
+#for logged in users not to be sent a notification 
 pushoverusers:
-	User1: user1pushoverkey
-	User2: user2pushoverkey
+    User1: user1pushoverkey
+    User2: user2pushoverkey
 
+#the prefix to text commands sent in chat
 commandprefix: !
 
+#timeout between user logging out and in
+#again before a new notification is sent
 quietloginoffset: 60
