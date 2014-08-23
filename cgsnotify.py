@@ -71,7 +71,7 @@ def send_pushover_notification(userkey, title, message):
             "token": config['apptoken'],
             "user": userkey,
             "message": message,
-            "title" : "CGSNotify - " + title,
+            "title" : config['name'] + " - " + title,
         }), { "Content-type": "application/x-www-form-urlencoded" }
     )
     conn.getresponse()
@@ -113,6 +113,8 @@ def parse_text_command(user, command):
     command = command[1:]
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
+    else if command == 'stillhere':
+
 
 if __name__ == "__main__":
     userlogininfo = {}
@@ -120,7 +122,7 @@ if __name__ == "__main__":
     with open('config.yaml', 'r') as f:
         config = yaml.load(f)
 
-    argparser = argparse.ArgumentParser(description="CGS Mumble server notifications script.")
+    argparser = argparse.ArgumentParser(description="Mumble-pushover notifications script.")
     argparser.add_argument("-t", "--test-mode", help = "Only sends notifications to the given username's key.")
     #argparser.add_argument("-v", "--verbose", action="count", default = 0, help = "Display info as well as errors")
     args = argparser.parse_args()
