@@ -106,10 +106,6 @@ def initialise_callbacks():
     cb=mice.Murmur.ServerCallbackPrx.uncheckedCast(adapter.addWithUUID(ServerCallbackI(s, adapter)))
     s.addCallback(cb)
 
-# initialise server object
-mice.ice.getImplicitContext().put("secret", config['icesecret'])
-s=mice.m.getServer(1)
-
 
 if __name__ == "__main__":
     userlogininfo = {}
@@ -123,6 +119,9 @@ if __name__ == "__main__":
     args = argparser.parse_args()
 
     logging.basicConfig(format="%(asctime)s [%(levelname)s]: %(message)s",datefmt="%d/%m/%y %H:%M:%S",level=logging.DEBUG)
+
+    mice.ice.getImplicitContext().put("secret", config['icesecret'])
+    s=mice.m.getServer(1)
 
     initialise_callbacks()
 
