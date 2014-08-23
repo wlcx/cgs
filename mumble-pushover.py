@@ -6,6 +6,7 @@ import httplib, urllib
 import argparse, logging
 import time, datetime
 import sys
+import random
 
 class ServerCallbackI(mice.Murmur.ServerCallback):
     """
@@ -121,6 +122,14 @@ def parse_text_command(user, command):
                      list_to_string(list_logged_in_users()) + ' are still online',
                      currentusers=list_logged_in_users()
                      )
+    elif command == 'roulette':
+        if random.randrange(0, 2): #50/50 chance of kicking self or random other
+            kicksession = user.session
+        else:
+            users = s.getUsers()
+            users.pop(user.session, None) #Remove the calling user from the lottery
+            kicksession = random.choice(users.keys())
+        s.kickUser(kicksession, 'You lose! >:D')
 
 if __name__ == "__main__":
     userlogininfo = {}
