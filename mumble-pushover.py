@@ -15,8 +15,8 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
         self.server = server
 
     def userConnected(self, u, current=None):
-        logging.info(u.name + " connected")
         currentusers = list_logged_in_users()
+        logging.info(u.name + " connected")
         if u.name not in userlogininfo:
             userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
         # prevent notifications being sent if the user logs out and in again within quietloginoffset seconds
@@ -27,7 +27,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
                 send_pushover_notification(config['pushoverusers'][args.test_mode], ("TESTING: " + u.name + " logged in"),
                 list_to_string(currentusers) + " " + isare + " online.")
             else:
-                notify_users()
+                notify_users(u.name + " logged in", list_to_string(currentusers) + " " + isare + " online.", currentusers=currentusers)
         else:
             logging.info("User logged out and in again within " + str(config['quietloginoffset']) + " seconds. Not notifying.")
         userlogininfo[u.name]["lastlogin"] = time.mktime(datetime.datetime.now().timetuple())
@@ -58,6 +58,7 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
 
 # Post notification to pushover servers
 def send_pushover_notification(userkey, title, message):
+    logging.info('Notifying {}'.format(userkey))
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json",
         urllib.urlencode({
@@ -75,14 +76,13 @@ def list_logged_in_users():
         users.append(s.getUsers()[x].name)
     return users
 
-def notify_users(all=False):
-    for x in config['pushoverusers'].keys(): # list of names for those with pushover
-        if x in currentusers:
-            logging.info("%s is logged in already, skipping", x)
-        else:
-            logging.info("Notifying %s", x)
-            send_pushover_notification(config['pushoverusers'][x],(u.name + " logged in"),
-            (list_to_string(currentusers) + " " + isare + " online."))
+def notify_users(title, message, currentusers=[]):
+    """notifies users via pushover. If currentusers (list of usernames) is specified,
+    these users are not notified"""
+
+    for u in config['pushoverusers'].keys(): # list of names for those with pushover
+        if u not in currentusers:
+            send_pushover_notification(config['pushoverusers'][u], title, message)
             time.sleep(0.5) # be nice to the api
 
 def list_to_string(inputlist):
@@ -117,7 +117,7 @@ def parse_text_command(user, command):
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
     elif command == 'stillhere':
-        notify_users()
+        notify_users('Poke!', list_to_string(list_logged_in_users()) + ' are still online')
 
 if __name__ == "__main__":
     userlogininfo = {}
