@@ -46,7 +46,10 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
         userlogininfo[u.name]["lastlogout"] = time.mktime(datetime.datetime.now().timetuple())
 
     def userTextMessage(self, p, msg, current=None):
-        logging.info("[CHAT] " + p.name + ": " + msg.text)
+        if msg.text[0] == config['commandprefix']:
+            parse_text_command(p, msg.text)
+	else:
+            logging.info("[CHAT] " + p.name + ": " + msg.text)
 
     def userStateChanged(self, u, current=None):
         pass
@@ -106,6 +109,10 @@ def initialise_callbacks():
     cb=mice.Murmur.ServerCallbackPrx.uncheckedCast(adapter.addWithUUID(ServerCallbackI(s, adapter)))
     s.addCallback(cb)
 
+def parse_text_command(user, command):
+    command = command[1:]
+    if command == 'hello':
+        s.sendMessageChannel(0, True, "Hello")
 
 if __name__ == "__main__":
     userlogininfo = {}
