@@ -1,0 +1,13 @@
+name: Server name to show in notification
+
+icesecret: icesecret
+
+apptoken: pushoverapptoken
+
+pushoverusers:
+	User1: user1pushoverkey
+	User2: user2pushoverkey
+
+commandprefix: !
+
+quietloginoffset: 60
