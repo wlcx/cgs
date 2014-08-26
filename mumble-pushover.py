@@ -100,7 +100,6 @@ def list_to_string(inputlist):
     if numusers >= 3: # foo, bar and baz
         for x in range(numusers-2):
             outstring += inputlist[x] + ", "
-        # exploits wraparound indexing, s[-1] refers to last item
         outstring += (inputlist[-2] + " and " + inputlist[-1])
     return outstring
 
@@ -123,12 +122,7 @@ def parse_text_command(user, command):
                      currentusers=list_logged_in_users()
                      )
     elif command == 'roulette':
-        if random.randrange(0, 2): #50/50 chance of kicking self or random other
-            kicksession = user.session
-        else:
-            users = s.getUsers()
-            users.pop(user.session, None) #Remove the calling user from the lottery
-            kicksession = random.choice(users.keys())
+        kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
 
 if __name__ == "__main__":
