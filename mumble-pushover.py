@@ -73,8 +73,8 @@ def send_pushover_notification(userkey, title, message):
 
 def list_logged_in_users():
     users = []
-    for x in s.getUsers(): # x is key for dictionary s.getUsers()
-        users.append(s.getUsers()[x].name)
+    for u in s.getUsers().itervalues(): # Python 2, python 3 uses .values()
+        users.append(u.name)
     return users
 
 def notify_users(title, message, currentusers=[]):
