@@ -127,7 +127,17 @@ def parse_text_command(user, command):
     elif command == 'roulette':
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
+    elif command == 'history' OR command == 'hist':
+        cmdHist(user)
 
+def cmdHist(user):
+    msg_list = ["User\t\tLast login\t\tLast Logout"]
+    for user_key,user_val in userlogininfo.iteritems(): #.items() in python 3.0
+        content = "{0}\t\t{1[lastlogin]:%d/%m/%y %H:%M}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
+        msg_list.append(content)
+    message = "\n".join(msg_list)
+    s.sendMessage(user.session,msg)
+    
 if __name__ == "__main__":
     userlogininfo = {}
 
