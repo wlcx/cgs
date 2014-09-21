@@ -121,9 +121,9 @@ def parse_text_command(user, command):
         cmdHist(user)
 
 def cmdHist(user):
-    msg_list = ["User\t\tLast login\t\tLast Logout"]
+    msg_list = ["User\t\tLast Logout"]
     for user_key,user_val in userlogininfo.iteritems(): #.items() in python 3.0
-        content = "{0}\t\t{1[lastlogin]:%d/%m/%y %H:%M}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
+        content = "{0}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
         msg_list.append(content)
     message = "\n".join(msg_list)
     s.sendMessage(user.session,msg)
