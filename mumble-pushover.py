@@ -17,29 +17,17 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
 
     def userConnected(self, u, current=None):
         currentusers = list_logged_in_users()
-        logging.info(u.name + " connected")
-        if u.name not in userlogininfo:
-            # Initialises userlogininfo key-values. Possibly avoidable.
-            userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
-        # prevent notifications being sent if the user logs out and in again within quietloginoffset seconds
-        if datetime.datetime.now() > userlogininfo[u.name]["lastlogout"] + datetime.timedelta(seconds=config['quietloginoffset']):
+        logging.info("{} connected".format(u.name))
+        # Notify if 1) we have no last logout data for the user or 2) the user logged out less than quietloginoffset seconds ago
+        if u.name not in lastlogouts.keys() or datetime.datetime.now() > (lastlogouts[u.name] + datetime.timedelta(seconds=config['quietloginoffset'])):
             isare = "is" if len(currentusers) == 1 else "are"
-            if args.test_mode:
-                logging.info("Testing mode: notifying " + args.test_mode)
-                send_pushover_notification(config['pushoverusers'][args.test_mode], ("TESTING: " + u.name + " logged in"),
-                list_to_string(currentusers) + " " + isare + " online.")
-            else:
-                notify_users(u.name + " logged in", list_to_string(currentusers) + " " + isare + " online.", currentusers=currentusers)
+            notify_users("{} logged in".format(u.name), "{} {} online.".format(list_to_string(currentusers), isare), currentusers=currentusers)
         else:
-            logging.info("User logged out and in again within " + str(config['quietloginoffset']) + " seconds. Not notifying.")
-        userlogininfo[u.name]["lastlogin"] = datetime.datetime.now()
+            logging.info("User logged out and in again within {} seconds. Not notifying.".format(str(config['quietloginoffset'])))
 
     def userDisconnected(self, u, current=None):
         logging.info(u.name + " disconnected")
-        if u.name not in userlogininfo:
-            userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
-            # How on earth could this ever be called, since you need to connect to disconnect ?
-        userlogininfo[u.name]["lastlogout"] = datetime.datetime.now()
+        lastlogouts[u.name] = datetime.datetime.now()
 
     def userTextMessage(self, u, msg, current=None):
         if msg.text[0] == config['commandprefix']:
@@ -76,18 +64,20 @@ def send_pushover_notification(userkey, title, message):
 
 def list_logged_in_users():
     users = []
-    for u in s.getUsers().itervalues(): # Python 2, python 3 uses .values()
-        users.append(u.name)
+    for x in s.getUsers(): # x is key for dictionary s.getUsers()
+        users.append(s.getUsers()[x].name)
     return users
 
 def notify_users(title, message, currentusers=[]):
     """notifies users via pushover. If currentusers (list of usernames) is specified,
     these users are not notified"""
-    # might be able to do with sets, though may be less clear.
-    for u in config['pushoverusers'].keys(): # list of names for those with pushover
-        if u not in currentusers:
-            send_pushover_notification(config['pushoverusers'][u], title, message)
-            time.sleep(0.5) # be nice to the api
+    if args.test_mode:
+        send_pushover_notification(config['pushoverusers'][args.test_mode], "[TEST] " + title, message)
+    else:
+        for u in config['pushoverusers'].keys(): # list of names for those with pushover
+            if u not in currentusers:
+                send_pushover_notification(config['pushoverusers'][u], title, message)
+                time.sleep(0.5) # be nice to the api
 
 def list_to_string(inputlist):
     """
@@ -139,7 +129,7 @@ def cmdHist(user):
     s.sendMessage(user.session,msg)
     
 if __name__ == "__main__":
-    userlogininfo = {}
+    lastlogouts = {}
 
     with open('config.yaml', 'r') as f:
         config = yaml.load(f)
