@@ -19,9 +19,10 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
         currentusers = list_logged_in_users()
         logging.info(u.name + " connected")
         if u.name not in userlogininfo:
+            # Initialises userlogininfo key-values. Possibly avoidable.
             userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
         # prevent notifications being sent if the user logs out and in again within quietloginoffset seconds
-        if time.mktime(datetime.datetime.now().timetuple()) > (userlogininfo[u.name]["lastlogout"] + config['quietloginoffset']):
+        if datetime.datetime.now() > userlogininfo[u.name]["lastlogout"] + datetime.timedelta(seconds=config['quietloginoffset']):
             isare = "is" if len(currentusers) == 1 else "are"
             if args.test_mode:
                 logging.info("Testing mode: notifying " + args.test_mode)
@@ -31,19 +32,21 @@ class ServerCallbackI(mice.Murmur.ServerCallback):
                 notify_users(u.name + " logged in", list_to_string(currentusers) + " " + isare + " online.", currentusers=currentusers)
         else:
             logging.info("User logged out and in again within " + str(config['quietloginoffset']) + " seconds. Not notifying.")
-        userlogininfo[u.name]["lastlogin"] = time.mktime(datetime.datetime.now().timetuple())
+        userlogininfo[u.name]["lastlogin"] = datetime.datetime.now()
 
     def userDisconnected(self, u, current=None):
         logging.info(u.name + " disconnected")
         if u.name not in userlogininfo:
             userlogininfo[u.name] = {'lastlogout' : 0, 'lastlogin' : 0,}
-        userlogininfo[u.name]["lastlogout"] = time.mktime(datetime.datetime.now().timetuple())
+            # How on earth could this ever be called, since you need to connect to disconnect ?
+        userlogininfo[u.name]["lastlogout"] = datetime.datetime.now()
 
-    def userTextMessage(self, p, msg, current=None):
+    def userTextMessage(self, u, msg, current=None):
         if msg.text[0] == config['commandprefix']:
-            parse_text_command(p, msg.text)
+            parse_text_command(u, msg.text)
+            logging.info("[CMD:] " + u.name + ": " + msg.text)
         else:
-            logging.info("[CHAT] " + p.name + ": " + msg.text)
+            logging.info("[CHAT] " + u.name + ": " + msg.text)
 
     def userStateChanged(self, u, current=None):
         pass
@@ -80,7 +83,7 @@ def list_logged_in_users():
 def notify_users(title, message, currentusers=[]):
     """notifies users via pushover. If currentusers (list of usernames) is specified,
     these users are not notified"""
-
+    # might be able to do with sets, though may be less clear.
     for u in config['pushoverusers'].keys(): # list of names for those with pushover
         if u not in currentusers:
             send_pushover_notification(config['pushoverusers'][u], title, message)
@@ -124,7 +127,17 @@ def parse_text_command(user, command):
     elif command == 'roulette':
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
+    elif command == 'history' OR command == 'hist':
+        cmdHist(user)
 
+def cmdHist(user):
+    msg_list = ["User\t\tLast login\t\tLast Logout"]
+    for user_key,user_val in userlogininfo.iteritems(): #.items() in python 3.0
+        content = "{0}\t\t{1[lastlogin]:%d/%m/%y %H:%M}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
+        msg_list.append(content)
+    message = "\n".join(msg_list)
+    s.sendMessage(user.session,msg)
+    
 if __name__ == "__main__":
     userlogininfo = {}
 
