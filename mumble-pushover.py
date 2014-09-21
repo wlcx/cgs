@@ -117,7 +117,7 @@ def parse_text_command(user, command):
     elif command == 'roulette':
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
-    elif command == 'history' OR command == 'hist':
+    elif command == 'history' or command == 'hist':
         cmdHist(user)
 
 def cmdHist(user):
