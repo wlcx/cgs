@@ -109,7 +109,7 @@ def parse_text_command(user, command):
     command = command[1:]
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
-    elif command == 'stillhere':
+    elif command == 'stillhere' or command == 'poke':
         isare = "is" if len(list_logged_in_users()) == 1 else "are"
         notify_users('Poke!',
                      list_to_string(list_logged_in_users()) + ' '+ isare +' still online',
@@ -119,15 +119,14 @@ def parse_text_command(user, command):
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
     elif command == 'history' or command == 'hist':
-        cmdHist(user)
+        cmdHist(user)   
 
 def cmdHist(user):
     try:
-        msg_list = ["User:  Last Logout"]
+        msg_list = ["User:  Last Logged Out"]
         for user_name,ll in lastlogouts.items():
-            content = "{0}:  {1:%H:%M %d/%m/%y}".format(user_name,ll)
+            content = "{0} - {1:%H:%M  %d/%m/%y}".format(user_name,ll)
             msg_list.append(content)
-        #msg = "\n".join(msg_list)
         for msg in msg_list:
             s.sendMessage(user.session,msg)
     except Exception as e: # catches all errors
