@@ -122,14 +122,20 @@ def parse_text_command(user, command):
 
 def cmdHist(user):
     try:
-        msg_list = ["User\t\tLast Logout"]
-        for user_key,user_val in userlogininfo.iteritems(): #.items() in python 3.0
-            content = "{0}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
-            msg_list.append(content)
-        message = "\n".join(msg_list)
-        s.sendMessage(user.session,msg)
-     except Exception as e: # catch all exceptions except KeyboardInterrupt, SystemExit
+        msg = "Notch:\tlast on server:\tNever"
+        s.sendMessage(user.session,msg) #Test to see if this works
+    except Exception as e: # catches all errors ?
         s.sendMessageChannel(0, True, "Error: {}".format(e))
+        
+#    try:
+#        msg_list = ["User\t\tLast Logout"]
+#        for user_key,user_val in userlogininfo.iteritems(): #.items() in python 3.0
+#            content = "{0}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
+#            msg_list.append(content)
+#        message = "\n".join(msg_list)
+#        s.sendMessage(user.session,msg)
+#     except Exception as e: # catch all exceptions except KeyboardInterrupt, SystemExit
+#        s.sendMessageChannel(0, True, "Error: {}".format(e))
         
     
 if __name__ == "__main__":
