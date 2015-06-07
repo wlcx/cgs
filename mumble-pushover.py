@@ -115,6 +115,7 @@ def parse_text_command(user, command):
                      list_to_string(list_logged_in_users()) + ' '+ isare +' still online',
                      currentusers=list_logged_in_users()
                      )
+        s.sendMessage(user.session,"Poke sent!")
     elif command == 'roulette':
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
