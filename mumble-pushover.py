@@ -128,8 +128,10 @@ def cmdHist(user):
         for user_name,ll in lastlogouts.items():
             content = "{0} - {1:%H:%M  %d/%m/%y}".format(user_name,ll)
             msg_list.append(content)
-        for msg in msg_list:
-            s.sendMessage(user.session,msg)
+        #for msg in msg_list:
+        #    s.sendMessage(user.session,msg)
+        msg = "<br>"+"<br>".join(msg_list)
+        s.sendMessage(user.session,msg)
     except Exception as e: # catches all errors
         s.sendMessageChannel(0, True, "Error: {}".format(e))
 
