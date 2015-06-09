@@ -124,7 +124,7 @@ def parse_text_command(user, command):
 
 def cmdHist(user):
     try:
-        msg_list = ["<br>User:  Last Logged Out"] #Start everything on line below [server]
+        msg_list = ["<br>User  -  Last Logged Out"] #Start everything on line below [server]
         for user_name,ll in lastlogouts.items():
             content = "{0} - {1:%H:%M  %d/%m/%y}".format(user_name,ll)
             msg_list.append(content)
