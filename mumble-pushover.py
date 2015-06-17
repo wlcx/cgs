@@ -7,6 +7,7 @@ import argparse, logging
 import time, datetime
 import sys
 import random
+import operator
 
 class ServerCallbackI(mice.Murmur.ServerCallback):
     """
@@ -64,7 +65,7 @@ def send_pushover_notification(userkey, title, message):
 
 def list_logged_in_users():
     users = []
-    for x in s.getUsers(): # x is key for dictionary s.getUsers()
+    for x in s.getUsers(): # x is key for dictionary s.getUsers(). 
         users.append(s.getUsers()[x].name)
     return users
 
@@ -120,19 +121,18 @@ def parse_text_command(user, command):
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
     elif command == 'history' or command == 'hist':
-        cmdHist(user)   
+        cmdHist(user)
 
 def cmdHist(user):
     try:
         msg_list = ["<br>User  -  Last Logged Out"] #Start everything on line below [server]
-        for user_name,ll in lastlogouts.items():
+        # Iterate through list of ordered tuple pairs (of user and last logout) sorted by most recent logout.
+        for user_name,ll in sorted(lastlogouts.items(), key=operator.itemgetter(1), reverse=true):
             content = "{0} - {1:%H:%M  %d/%m/%y}".format(user_name,ll)
             msg_list.append(content)
-        #for msg in msg_list:
-        #    s.sendMessage(user.session,msg)
         msg = "<br>".join(msg_list)
         s.sendMessage(user.session,msg)
-    except Exception as e: # catches all errors
+    except Exception as e: # catches all errors ?
         s.sendMessageChannel(0, True, "Error: {}".format(e))
 
 
