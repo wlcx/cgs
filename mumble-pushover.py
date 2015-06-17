@@ -65,8 +65,10 @@ def send_pushover_notification(userkey, title, message):
 
 def list_logged_in_users():
     users = []
-    for x in s.getUsers(): # x is key for dictionary s.getUsers(). 
-        users.append(s.getUsers()[x].name)
+#    for x in s.getUsers(): # x is key for dictionary s.getUsers(). 
+#        users.append(s.getUsers()[x].name)
+    for userobj in s.getUsers().values: # userobj is value for dictionary s.getUsers(). 
+        users.append(userobj.name)
     return users
 
 def notify_users(title, message, currentusers=[]):
@@ -86,7 +88,7 @@ def list_to_string(inputlist):
     Inputlist[n] (where n>3) returns "inputlist[0], inputlist[1], ... and inputlist[n]"
     """
     outstring = ""
-    numusers=len(inputlist)
+    numusers = len(inputlist)
     if numusers == 1: # foo
         outstring += inputlist[0]
     if numusers == 2: # foo and bar
