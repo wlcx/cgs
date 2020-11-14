@@ -7,6 +7,7 @@ import argparse, logging
 import time, datetime
 import sys
 import random
+import operator
 
 class ServerCallbackI(mice.Murmur.ServerCallback):
     """
@@ -64,8 +65,10 @@ def send_pushover_notification(userkey, title, message):
 
 def list_logged_in_users():
     users = []
-    for x in s.getUsers(): # x is key for dictionary s.getUsers()
-        users.append(s.getUsers()[x].name)
+#    for x in s.getUsers(): # x is key for dictionary s.getUsers(). 
+#        users.append(s.getUsers()[x].name)
+    for userobj in s.getUsers().values: # userobj is value for dictionary s.getUsers(). 
+        users.append(userobj.name)
     return users
 
 def notify_users(title, message, currentusers=[]):
@@ -85,7 +88,7 @@ def list_to_string(inputlist):
     Inputlist[n] (where n>3) returns "inputlist[0], inputlist[1], ... and inputlist[n]"
     """
     outstring = ""
-    numusers=len(inputlist)
+    numusers = len(inputlist)
     if numusers == 1: # foo
         outstring += inputlist[0]
     if numusers == 2: # foo and bar
@@ -109,11 +112,13 @@ def parse_text_command(user, command):
     command = command[1:]
     if command == 'hello':
         s.sendMessageChannel(0, True, "Hello")
-    elif command == 'stillhere':
+    elif command == 'stillhere' or command == 'poke':
+        isare = "is" if len(list_logged_in_users()) == 1 else "are"
         notify_users('Poke!',
-                     list_to_string(list_logged_in_users()) + ' are still online',
+                     list_to_string(list_logged_in_users()) + ' '+ isare +' still online',
                      currentusers=list_logged_in_users()
                      )
+        s.sendMessage(user.session,"Poke sent!")
     elif command == 'roulette':
         kicksession = random.choice(s.getUsers().keys())
         s.kickUser(kicksession, 'You lose! >:D')
@@ -121,13 +126,18 @@ def parse_text_command(user, command):
         cmdHist(user)
 
 def cmdHist(user):
-    msg_list = ["User\t\tLast login\t\tLast Logout"]
-    for user_key,user_val in userlogininfo.iteritems(): #.items() in python 3.0
-        content = "{0}\t\t{1[lastlogin]:%d/%m/%y %H:%M}\t\t{1[lastlogout]:%d/%m/%y %H:%M}".format(user_key,user_val)
-        msg_list.append(content)
-    message = "\n".join(msg_list)
-    s.sendMessage(user.session,msg)
-    
+    try:
+        msg_list = ["<br>User  -  Last Logged Out"] #Start everything on line below [server]
+        # Iterate through list of ordered tuple pairs (of user and last logout) sorted by most recent logout.
+        for user_name,ll in sorted(lastlogouts.items(), key=operator.itemgetter(1), reverse=true):
+            content = "{0} - {1:%H:%M  %d/%m/%y}".format(user_name,ll)
+            msg_list.append(content)
+        msg = "<br>".join(msg_list)
+        s.sendMessage(user.session,msg)
+    except Exception as e: # catches all errors ?
+        s.sendMessageChannel(0, True, "Error: {}".format(e))
+
+
 if __name__ == "__main__":
     lastlogouts = {}
 
